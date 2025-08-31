@@ -12,7 +12,7 @@ const GameScreen = () => {
     clickPower: 1,
     autoIncomeRate: 0,
     multiplier: 1,
-    totalDonersCut: 0,
+    totalChickensCut: 0,
     totalCustomersServed: 0,
     totalCustomersLost: 0,
     totalPlayTime: 0,
@@ -21,17 +21,17 @@ const GameScreen = () => {
     shopClosed: false,
     upgrades: {
       sharperKnife: { level: 0, cost: 15, power: 1 },
-      donerMachine: { level: 0, cost: 75, income: 1 },
-      garlicSauce: { level: 0, cost: 150, multiplier: 0.2 },
+      chickenMachine: { level: 0, cost: 75, income: 1 },
+      spicySauce: { level: 0, cost: 150, multiplier: 0.2 },
       marketingBoost: { level: 0, cost: 300, customerBonus: 0.1 },
-      premiumMeat: { level: 0, cost: 500, clickMultiplier: 0.5 },
+      premiumChicken: { level: 0, cost: 500, clickMultiplier: 0.5 },
       speedBoost: { level: 0, cost: 800, speedMultiplier: 0.3 }
     }
   });
 
-  const [donerRotation, setDonerRotation] = useState(0);
+  const [chickenRotation, setChickenRotation] = useState(0);
   const [isSlicing, setIsSlicing] = useState(false);
-  const [knifePosition, setKnifePosition] = useState(-50); // Knife animation position
+  const [knifePosition, setKnifePosition] = useState(-20); // Closer start position
   const [particles, setParticles] = useState([]);
   const [moneyPopup, setMoneyPopup] = useState([]);
   const [satisfactionPopup, setSatisfactionPopup] = useState([]);
@@ -40,36 +40,36 @@ const GameScreen = () => {
   const [currentCustomer, setCurrentCustomer] = useState(null);
   const [customerProgress, setCustomerProgress] = useState(0);
 
-  // Shorter time limits - much more challenging!
+  // Updated customer types for chicken
   const customerTypes = [
-    { name: "Ahmed", avatar: "👨", order: "Regular doner", slicesNeeded: 8, timeLimit: 5, reward: 30, nationality: "🇹🇷" },
-    { name: "Fatma", avatar: "👵", order: "Less oil doner", slicesNeeded: 6, timeLimit: 4, reward: 25, nationality: "🇹🇷" },
-    { name: "Student Mike", avatar: "🧑‍🎓", order: "Large doner", slicesNeeded: 12, timeLimit: 6, reward: 45, nationality: "🇺🇸" },
-    { name: "Business Lady", avatar: "👩‍💼", order: "Quick doner", slicesNeeded: 5, timeLimit: 3, reward: 35, nationality: "🇬🇧" },
-    { name: "Tourist John", avatar: "🧑‍🦱", order: "Special doner", slicesNeeded: 15, timeLimit: 8, reward: 60, nationality: "🇩🇪" },
-    { name: "Coach Ali", avatar: "🧑‍⚕️", order: "Protein doner", slicesNeeded: 20, timeLimit: 10, reward: 80, nationality: "🇹🇷" },
-    { name: "Little Emma", avatar: "🧒", order: "Small doner", slicesNeeded: 4, timeLimit: 3, reward: 20, nationality: "🇫🇷" },
-    { name: "Builder Joe", avatar: "👷‍♂️", order: "Hearty doner", slicesNeeded: 25, timeLimit: 12, reward: 100, nationality: "🇮🇪" },
-    { name: "Chef Marco", avatar: "👨‍🍳", order: "Gourmet doner", slicesNeeded: 18, timeLimit: 9, reward: 75, nationality: "🇮🇹" },
-    { name: "Doctor Sarah", avatar: "👩‍⚕️", order: "Healthy doner", slicesNeeded: 10, timeLimit: 5, reward: 55, nationality: "🇨🇦" },
-    { name: "Programmer Alex", avatar: "👨‍💻", order: "Energy doner", slicesNeeded: 14, timeLimit: 7, reward: 65, nationality: "🇺🇸" },
-    { name: "Artist Luna", avatar: "👩‍🎨", order: "Creative doner", slicesNeeded: 12, timeLimit: 6, reward: 50, nationality: "🇯🇵" },
-    { name: "Police Officer", avatar: "👮‍♂️", order: "Power doner", slicesNeeded: 22, timeLimit: 11, reward: 90, nationality: "🇬🇧" },
-    { name: "Fire Fighter", avatar: "🧑‍🚒", order: "Hero doner", slicesNeeded: 30, timeLimit: 15, reward: 120, nationality: "🇺🇸" },
-    { name: "VIP Customer", avatar: "🤵", order: "Royal doner", slicesNeeded: 35, timeLimit: 20, reward: 200, nationality: "🇸🇦" }
+    { name: "Ahmed", avatar: "👨", order: "Grilled chicken", slicesNeeded: 8, timeLimit: 5, reward: 30, nationality: "🇹🇷" },
+    { name: "Fatma", avatar: "👵", order: "Light chicken", slicesNeeded: 6, timeLimit: 4, reward: 25, nationality: "🇹🇷" },
+    { name: "Student Mike", avatar: "🧑‍🎓", order: "Large chicken", slicesNeeded: 12, timeLimit: 6, reward: 45, nationality: "🇺🇸" },
+    { name: "Business Lady", avatar: "👩‍💼", order: "Quick chicken", slicesNeeded: 5, timeLimit: 3, reward: 35, nationality: "🇬🇧" },
+    { name: "Tourist John", avatar: "🧑‍🦱", order: "Special chicken", slicesNeeded: 15, timeLimit: 8, reward: 60, nationality: "🇩🇪" },
+    { name: "Coach Ali", avatar: "🧑‍⚕️", order: "Protein chicken", slicesNeeded: 20, timeLimit: 10, reward: 80, nationality: "🇹🇷" },
+    { name: "Little Emma", avatar: "🧒", order: "Tender chicken", slicesNeeded: 4, timeLimit: 3, reward: 20, nationality: "🇫🇷" },
+    { name: "Builder Joe", avatar: "👷‍♂️", order: "Hearty chicken", slicesNeeded: 25, timeLimit: 12, reward: 100, nationality: "🇮🇪" },
+    { name: "Chef Marco", avatar: "👨‍🍳", order: "Gourmet chicken", slicesNeeded: 18, timeLimit: 9, reward: 75, nationality: "🇮🇹" },
+    { name: "Doctor Sarah", avatar: "👩‍⚕️", order: "Healthy chicken", slicesNeeded: 10, timeLimit: 5, reward: 55, nationality: "🇨🇦" },
+    { name: "Programmer Alex", avatar: "👨‍💻", order: "Energy chicken", slicesNeeded: 14, timeLimit: 7, reward: 65, nationality: "🇺🇸" },
+    { name: "Artist Luna", avatar: "👩‍🎨", order: "Creative chicken", slicesNeeded: 12, timeLimit: 6, reward: 50, nationality: "🇯🇵" },
+    { name: "Police Officer", avatar: "👮‍♂️", order: "Power chicken", slicesNeeded: 22, timeLimit: 11, reward: 90, nationality: "🇬🇧" },
+    { name: "Fire Fighter", avatar: "🧑‍🚒", order: "Hero chicken", slicesNeeded: 30, timeLimit: 15, reward: 120, nationality: "🇺🇸" },
+    { name: "VIP Customer", avatar: "🤵", order: "Royal chicken", slicesNeeded: 35, timeLimit: 20, reward: 200, nationality: "🇸🇦" }
   ];
 
-  // Expanded mission system
+  // Updated missions for chicken theme
   const [missions, setMissions] = useState([
     // Beginner missions
-    { id: 1, title: "First Steps", description: "Cut 5 doners", target: 5, current: 0, reward: 25, difficulty: "easy", completed: false },
-    { id: 2, title: "Doner Apprentice", description: "Cut 20 doners", target: 20, current: 0, reward: 75, difficulty: "easy", completed: false },
+    { id: 1, title: "First Cuts", description: "Cut 5 chickens", target: 5, current: 0, reward: 25, difficulty: "easy", completed: false },
+    { id: 2, title: "Chicken Master", description: "Cut 20 chickens", target: 20, current: 0, reward: 75, difficulty: "easy", completed: false },
     { id: 3, title: "First Customer", description: "Serve 1 customer", target: 1, current: 0, reward: 50, difficulty: "easy", completed: false },
     { id: 4, title: "Satisfaction Keeper", description: "Keep satisfaction above 80", target: 80, current: 100, reward: 100, difficulty: "easy", completed: false },
     
     // Intermediate missions
-    { id: 5, title: "Doner Master", description: "Cut 100 doners", target: 100, current: 0, reward: 200, difficulty: "medium", completed: false },
-    { id: 6, title: "Speed Service", description: "Cut 30 doners in 60s", target: 30, current: 0, reward: 300, difficulty: "medium", timeLimit: 60, completed: false },
+    { id: 5, title: "Poultry Expert", description: "Cut 100 chickens", target: 100, current: 0, reward: 200, difficulty: "medium", completed: false },
+    { id: 6, title: "Speed Service", description: "Cut 30 chickens in 60s", target: 30, current: 0, reward: 300, difficulty: "medium", timeLimit: 60, completed: false },
     { id: 7, title: "Customer Satisfaction", description: "Serve 10 customers", target: 10, current: 0, reward: 250, difficulty: "medium", completed: false },
     { id: 8, title: "Money Collector", description: "Earn 1000$", target: 1000, current: 0, reward: 150, difficulty: "medium", completed: false },
     { id: 9, title: "No Losses", description: "Don't lose any customers (serve 15)", target: 15, current: 0, reward: 500, difficulty: "medium", completed: false },
@@ -80,11 +80,11 @@ const GameScreen = () => {
     { id: 12, title: "VIP Treatment", description: "Serve the VIP Customer", target: 1, current: 0, reward: 1500, difficulty: "hard", completed: false },
     
     // Expert missions
-    { id: 13, title: "Doner Empire", description: "Serve 100 customers without shop closure", target: 100, current: 0, reward: 5000, difficulty: "expert", completed: false },
+    { id: 13, title: "Chicken Empire", description: "Serve 100 customers without shop closure", target: 100, current: 0, reward: 5000, difficulty: "expert", completed: false },
     { id: 14, title: "Millionaire", description: "Earn 50000$", target: 50000, current: 0, reward: 10000, difficulty: "expert", completed: false }
   ]);
 
-  // Sound effects
+  // Enhanced sound effects with chicken sounds
   const playSound = useCallback((type) => {
     if (!gameState.soundEnabled) return;
     
@@ -97,10 +97,19 @@ const GameScreen = () => {
     
     switch(type) {
       case 'slice':
+        // Chicken cutting sound - higher pitch, quick
+        oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.08);
+        gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+        break;
+      case 'chicken_cut':
+        // Special chicken sound - cluck-like
         oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+        oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.05);
+        oscillator.frequency.setValueAtTime(400, audioContext.currentTime + 0.1);
         gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
         break;
       case 'money':
         oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
@@ -181,7 +190,7 @@ const GameScreen = () => {
           money: prev.money + (prev.autoIncomeRate * prev.multiplier)
         }));
         
-        setDonerRotation(prev => (prev + 1) % 360);
+        setChickenRotation(prev => (prev + 1) % 360);
       }, 1000);
 
       return () => clearInterval(interval);
@@ -194,7 +203,7 @@ const GameScreen = () => {
       const spawnInterval = setInterval(() => {
         const baseChance = 0.4;
         const marketingBonus = gameState.upgrades.marketingBoost.level * 0.1;
-        const satisfactionPenalty = (100 - gameState.customerSatisfaction) * 0.005; // Lower satisfaction = fewer customers
+        const satisfactionPenalty = (100 - gameState.customerSatisfaction) * 0.005;
         const totalChance = Math.max(baseChance + marketingBonus - satisfactionPenalty, 0.1);
         
         if (Math.random() < totalChance) {
@@ -219,7 +228,6 @@ const GameScreen = () => {
       const timer = setInterval(() => {
         setCurrentCustomer(prev => {
           if (prev.timeRemaining <= 1) {
-            // Customer left disappointed - decrease satisfaction
             setGameState(prevState => {
               const newSatisfaction = Math.max(prevState.customerSatisfaction - 15, 0);
               return {
@@ -269,22 +277,25 @@ const GameScreen = () => {
     }, 2000);
   };
 
-  // REALISTIC SLICE ANIMATION with knife falling down
-  const sliceDoner = useCallback(() => {
+  // CHICKEN SLICING with better knife position
+  const sliceChicken = useCallback(() => {
     if (gameState.shopClosed) return;
     
     const baseEarned = gameState.clickPower * gameState.multiplier;
-    const premiumBonus = 1 + (gameState.upgrades.premiumMeat.level * gameState.upgrades.premiumMeat.clickMultiplier);
+    const premiumBonus = 1 + (gameState.upgrades.premiumChicken.level * gameState.upgrades.premiumChicken.clickMultiplier);
     const speedBonus = 1 + (gameState.upgrades.speedBoost.level * gameState.upgrades.speedBoost.speedMultiplier);
     const earned = baseEarned * premiumBonus * speedBonus;
     
     setGameState(prev => ({
       ...prev,
       money: prev.money + earned,
-      totalDonersCut: prev.totalDonersCut + 1
+      totalChickensCut: prev.totalChickensCut + 1
     }));
 
+    // Play chicken cutting sounds
     playSound('slice');
+    setTimeout(() => playSound('chicken_cut'), 100); // Delayed chicken sound
+    
     showMoneyPopup(earned, 45 + Math.random() * 10, 40 + Math.random() * 10);
 
     // Update missions
@@ -313,10 +324,7 @@ const GameScreen = () => {
       setCustomerProgress(newProgress);
       
       if (newProgress >= currentCustomer.slicesNeeded) {
-        // Order completed successfully!
         const customerReward = currentCustomer.reward * (1 + gameState.upgrades.marketingBoost.level * 0.1);
-        
-        // Increase satisfaction for completed order
         const satisfactionIncrease = Math.min(5, 100 - gameState.customerSatisfaction);
         
         setGameState(prev => ({
@@ -349,52 +357,52 @@ const GameScreen = () => {
       }
     }
 
-    // KNIFE FALLING ANIMATION - Top to bottom
+    // BETTER KNIFE ANIMATION - Starts closer to chicken
     setIsSlicing(true);
-    setKnifePosition(-50); // Start position (above doner)
+    setKnifePosition(-20); // Start just above chicken
     
     // Animate knife falling down
     const animateKnife = () => {
-      let position = -50;
+      let position = -20;
       const fallInterval = setInterval(() => {
-        position += 8; // Speed of falling
+        position += 12; // Faster fall speed
         setKnifePosition(position);
         
-        if (position >= 100) { // End position (below doner)
+        if (position >= 80) { // Stop at bottom of chicken
           clearInterval(fallInterval);
           setTimeout(() => {
             setIsSlicing(false);
-            setKnifePosition(-50); // Reset position
-          }, 200);
+            setKnifePosition(-20); // Reset position
+          }, 150);
         }
-      }, 20);
+      }, 25);
     };
     
     animateKnife();
     
-    // Create meat particles at bottom
-    const newParticles = Array.from({ length: 10 }, (_, i) => ({
+    // Create chicken particles at bottom
+    const newParticles = Array.from({ length: 12 }, (_, i) => ({
       id: Date.now() + i,
-      x: 25 + Math.random() * 50, // Spread across bottom
-      y: 75 + Math.random() * 15, // At bottom of doner
-      color: ['#fbbf24', '#f59e0b', '#d97706', '#92400e', '#dc2626', '#ef4444'][Math.floor(Math.random() * 6)]
+      x: 20 + Math.random() * 60, // Wider spread
+      y: 70 + Math.random() * 20, // At bottom
+      color: ['#fbbf24', '#f59e0b', '#d97706', '#92400e', '#dc2626', '#ef4444', '#fcd34d'][Math.floor(Math.random() * 7)]
     }));
     setParticles(prev => [...prev, ...newParticles]);
     
     setTimeout(() => {
       setParticles(prev => prev.filter(p => !newParticles.includes(p)));
-    }, 2000);
+    }, 2500);
   }, [gameState, currentCustomer, customerProgress, playSound]);
 
   // Reopen shop function
   const reopenShop = () => {
-    const cost = 1000; // Cost to reopen shop
+    const cost = 1000;
     if (gameState.money >= cost) {
       setGameState(prev => ({
         ...prev,
         money: prev.money - cost,
         shopClosed: false,
-        customerSatisfaction: 50 // Start with medium satisfaction
+        customerSatisfaction: 50
       }));
       playSound('complete');
     }
@@ -416,15 +424,15 @@ const GameScreen = () => {
         if (upgradeType === 'sharperKnife') {
           newUpgrade.power += 1;
           newState.clickPower = prev.clickPower + 1;
-        } else if (upgradeType === 'donerMachine') {
+        } else if (upgradeType === 'chickenMachine') {
           newUpgrade.income += 2;
           newState.autoIncomeRate = prev.autoIncomeRate + 2;
-        } else if (upgradeType === 'garlicSauce') {
+        } else if (upgradeType === 'spicySauce') {
           newUpgrade.multiplier += 0.2;
           newState.multiplier = prev.multiplier + 0.2;
         } else if (upgradeType === 'marketingBoost') {
           newUpgrade.customerBonus += 0.1;
-        } else if (upgradeType === 'premiumMeat') {
+        } else if (upgradeType === 'premiumChicken') {
           newUpgrade.clickMultiplier += 0.5;
         } else if (upgradeType === 'speedBoost') {
           newUpgrade.speedMultiplier += 0.3;
@@ -463,11 +471,11 @@ const GameScreen = () => {
 
   // Save/Load game state
   useEffect(() => {
-    localStorage.setItem('donerMasterSave', JSON.stringify({ gameState, missions }));
+    localStorage.setItem('chickenMasterSave', JSON.stringify({ gameState, missions }));
   }, [gameState, missions]);
 
   useEffect(() => {
-    const savedGame = localStorage.getItem('donerMasterSave');
+    const savedGame = localStorage.getItem('chickenMasterSave');
     if (savedGame) {
       try {
         const parsed = JSON.parse(savedGame);
@@ -534,7 +542,7 @@ const GameScreen = () => {
               
               <Button
                 onClick={() => {
-                  localStorage.removeItem('donerMasterSave');
+                  localStorage.removeItem('chickenMasterSave');
                   window.location.reload();
                 }}
                 variant="outline"
@@ -625,7 +633,7 @@ const GameScreen = () => {
             </Badge>
             <Badge variant="outline" className="px-3 py-1">
               <Target className="w-4 h-4 mr-1" />
-              Doners: {gameState.totalDonersCut}
+              Chickens: {gameState.totalChickensCut}
             </Badge>
             <Badge variant="outline" className="px-3 py-1">
               <Users className="w-4 h-4 mr-1" />
@@ -694,80 +702,50 @@ const GameScreen = () => {
             <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-4 border-orange-300 rounded-3xl">
               <CardContent className="p-8 relative">
                 
-                {/* CONE-SHAPED DONER - REALISTIC! */}
+                {/* CHICKEN CONE SHAPE! */}
                 <div className="relative flex flex-col items-center mb-8">
                   <div 
                     className="relative w-80 h-96 mb-6 cursor-pointer transform transition-all hover:scale-105 active:scale-95"
-                    onClick={sliceDoner}
+                    onClick={sliceChicken}
                     style={{
-                      transform: `rotate(${donerRotation}deg) scale(1)`,
+                      transform: `rotate(${chickenRotation}deg) scale(1)`,
                       transition: 'transform 0.3s ease-out'
                     }}
                   >
-                    {/* CONE-SHAPED DONER LAYERS - WIDE TOP, NARROW BOTTOM */}
+                    {/* CHICKEN LAYERS IN CONE SHAPE */}
                     
-                    {/* Top layer - Widest (barely visible) */}
-                    <div className="absolute left-1/2 top-4 w-72 h-16 bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 transform -translate-x-1/2 shadow-2xl border-4 border-amber-700 overflow-hidden opacity-20" 
-                         style={{
-                           clipPath: 'ellipse(140px 32px at 50% 50%)',
-                           borderRadius: '50%'
-                         }}>
-                      <div className="absolute inset-2 bg-gradient-to-br from-red-400 via-orange-400 to-amber-500 opacity-90" style={{borderRadius: '50%'}}></div>
-                      {/* Skewer through center */}
-                      <div className="absolute left-1/2 top-0 w-2 h-full bg-gradient-to-b from-gray-400 to-gray-600 rounded-full transform -translate-x-1/2 opacity-60"></div>
+                    {/* Top layer - Barely visible */}
+                    <div className="absolute left-1/2 top-8 w-64 h-12 transform -translate-x-1/2 shadow-xl opacity-20 flex items-center justify-center text-4xl">
+                      🐔
                     </div>
                     
                     {/* Upper layer */}
-                    <div className="absolute left-1/2 top-12 w-68 h-20 bg-gradient-to-r from-red-500 via-orange-600 to-amber-600 transform -translate-x-1/2 shadow-xl border-3 border-red-700 overflow-hidden opacity-40"
-                         style={{
-                           clipPath: 'ellipse(130px 40px at 50% 50%)',
-                           borderRadius: '50%'
-                         }}>
-                      <div className="absolute inset-2 bg-gradient-to-br from-amber-500 via-red-400 to-orange-500 opacity-85" style={{borderRadius: '50%'}}></div>
-                      <div className="absolute left-1/2 top-0 w-2 h-full bg-gradient-to-b from-gray-400 to-gray-600 rounded-full transform -translate-x-1/2 opacity-70"></div>
+                    <div className="absolute left-1/2 top-20 w-56 h-16 transform -translate-x-1/2 shadow-xl opacity-40 flex items-center justify-center text-5xl">
+                      🐔
                     </div>
                     
                     {/* Middle layer */}
-                    <div className="absolute left-1/2 top-24 w-60 h-28 bg-gradient-to-r from-orange-600 via-red-500 to-amber-700 transform -translate-x-1/2 shadow-xl border-3 border-orange-800 overflow-hidden opacity-60"
-                         style={{
-                           clipPath: 'ellipse(115px 56px at 50% 50%)',
-                           borderRadius: '50%'
-                         }}>
-                      <div className="absolute inset-2 bg-gradient-to-br from-red-600 via-amber-500 to-orange-600 opacity-90" style={{borderRadius: '50%'}}></div>
-                      <div className="absolute left-1/2 top-0 w-2 h-full bg-gradient-to-b from-gray-500 to-gray-700 rounded-full transform -translate-x-1/2 opacity-80"></div>
+                    <div className="absolute left-1/2 top-36 w-48 h-20 transform -translate-x-1/2 shadow-xl opacity-60 flex items-center justify-center text-6xl">
+                      🐔
                     </div>
                     
                     {/* Lower middle layer */}
-                    <div className="absolute left-1/2 top-40 w-48 h-32 bg-gradient-to-r from-amber-700 via-red-600 to-orange-700 transform -translate-x-1/2 shadow-xl border-3 border-amber-800 overflow-hidden opacity-80"
-                         style={{
-                           clipPath: 'ellipse(92px 64px at 50% 50%)',
-                           borderRadius: '50%'
-                         }}>
-                      <div className="absolute inset-2 bg-gradient-to-br from-orange-600 via-red-500 to-amber-600 opacity-85" style={{borderRadius: '50%'}}></div>
-                      <div className="absolute left-1/2 top-0 w-2 h-full bg-gradient-to-b from-gray-500 to-gray-700 rounded-full transform -translate-x-1/2 opacity-90"></div>
+                    <div className="absolute left-1/2 top-56 w-40 h-24 transform -translate-x-1/2 shadow-xl opacity-80 flex items-center justify-center text-7xl">
+                      🐔
                     </div>
                     
-                    {/* Bottom layer - MAIN VISIBLE PART */}
-                    <div className="absolute left-1/2 top-56 w-36 h-36 bg-gradient-to-r from-red-700 via-amber-600 to-orange-800 transform -translate-x-1/2 shadow-2xl border-4 border-red-900 overflow-hidden"
-                         style={{
-                           clipPath: 'ellipse(68px 72px at 50% 50%)',
-                           borderRadius: '50%'
-                         }}>
-                      <div className="absolute inset-2 bg-gradient-to-br from-amber-700 via-orange-600 to-red-600 opacity-90" style={{borderRadius: '50%'}}></div>
-                      {/* Meat texture details */}
-                      <div className="absolute inset-4 bg-gradient-to-tl from-yellow-600 via-red-500 to-orange-600 opacity-70" style={{borderRadius: '50%'}}></div>
-                      <div className="absolute inset-6 bg-gradient-to-br from-red-400 via-orange-400 to-amber-500 opacity-60" style={{borderRadius: '50%'}}></div>
-                      {/* Skewer through center - most visible */}
-                      <div className="absolute left-1/2 top-0 w-3 h-full bg-gradient-to-b from-gray-600 to-gray-800 rounded-full transform -translate-x-1/2 shadow-lg"></div>
+                    {/* Bottom layer - MAIN VISIBLE CHICKEN */}
+                    <div className="absolute left-1/2 top-80 w-32 h-28 transform -translate-x-1/2 shadow-2xl opacity-100 flex items-center justify-center text-8xl border-4 border-orange-300 rounded-full bg-gradient-to-br from-yellow-100 to-orange-200">
+                      🐔
                     </div>
                     
-                    {/* KNIFE FALLING ANIMATION */}
+                    {/* KNIFE FALLING ANIMATION - BETTER POSITIONED */}
                     {isSlicing && (
                       <div 
-                        className="absolute left-1/2 transform -translate-x-1/2 text-6xl z-50 transition-all duration-300"
+                        className="absolute left-1/2 transform -translate-x-1/2 text-5xl z-50 transition-all duration-300"
                         style={{
                           top: `${knifePosition}%`,
-                          filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))'
+                          filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))'
                         }}
                       >
                         🔪
@@ -775,31 +753,31 @@ const GameScreen = () => {
                     )}
                   </div>
                   
-                  {/* Enhanced particles at bottom */}
+                  {/* Enhanced chicken particles at bottom */}
                   {particles.map(particle => (
                     <div
                       key={particle.id}
-                      className="absolute w-4 h-4 rounded-full pointer-events-none animate-bounce shadow-lg z-40"
+                      className="absolute w-5 h-5 rounded-full pointer-events-none animate-bounce shadow-lg z-40"
                       style={{
                         left: `${particle.x}%`,
                         top: `${particle.y}%`,
                         backgroundColor: particle.color,
-                        animationDuration: '2s'
+                        animationDuration: '2.5s'
                       }}
                     />
                   ))}
                   
                   {/* Cut Button */}
                   <Button
-                    onClick={sliceDoner}
+                    onClick={sliceChicken}
                     size="lg"
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-6 px-12 rounded-full shadow-xl transform transition-all hover:scale-110 active:scale-95 border-4 border-green-400 text-xl"
+                    className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-6 px-12 rounded-full shadow-xl transform transition-all hover:scale-110 active:scale-95 border-4 border-orange-400 text-xl"
                   >
-                    🔪 CUT DONER! 🥙
+                    🔪 CUT CHICKEN! 🐔
                   </Button>
                   
                   <p className="mt-4 text-gray-700 text-center font-medium">
-                    Cut power: {gameState.clickPower} × {gameState.multiplier.toFixed(1)} × {(1 + gameState.upgrades.premiumMeat.level * 0.5).toFixed(1)} × {(1 + gameState.upgrades.speedBoost.level * 0.3).toFixed(1)} = ${(gameState.clickPower * gameState.multiplier * (1 + gameState.upgrades.premiumMeat.level * 0.5) * (1 + gameState.upgrades.speedBoost.level * 0.3)).toFixed(1)}/cut
+                    Cut power: {gameState.clickPower} × {gameState.multiplier.toFixed(1)} × {(1 + gameState.upgrades.premiumChicken.level * 0.5).toFixed(1)} × {(1 + gameState.upgrades.speedBoost.level * 0.3).toFixed(1)} = ${(gameState.clickPower * gameState.multiplier * (1 + gameState.upgrades.premiumChicken.level * 0.5) * (1 + gameState.upgrades.speedBoost.level * 0.3)).toFixed(1)}/cut
                   </p>
                 </div>
                 
@@ -839,42 +817,43 @@ const GameScreen = () => {
                   </Button>
                 </div>
 
-                {/* Other upgrades... */}
+                {/* Chicken Machine */}
                 <div className="p-3 border-2 border-green-200 rounded-2xl bg-gradient-to-r from-green-50 to-emerald-50">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Timer className="w-4 h-4 text-green-600" />
-                      <span className="font-semibold text-gray-800 text-sm">Doner Machine</span>
+                      <span className="font-semibold text-gray-800 text-sm">Chicken Machine</span>
                     </div>
-                    <Badge variant="secondary" className="text-xs">Lv.{gameState.upgrades.donerMachine.level}</Badge>
+                    <Badge variant="secondary" className="text-xs">Lv.{gameState.upgrades.chickenMachine.level}</Badge>
                   </div>
                   <p className="text-xs text-gray-600 mb-2">+$2/second</p>
                   <Button
-                    onClick={() => purchaseUpgrade('donerMachine')}
-                    disabled={gameState.money < gameState.upgrades.donerMachine.cost}
+                    onClick={() => purchaseUpgrade('chickenMachine')}
+                    disabled={gameState.money < gameState.upgrades.chickenMachine.cost}
                     className="w-full bg-green-500 hover:bg-green-600 text-xs py-2"
                     size="sm"
                   >
-                    ${formatNumber(gameState.upgrades.donerMachine.cost)}
+                    ${formatNumber(gameState.upgrades.chickenMachine.cost)}
                   </Button>
                 </div>
 
-                <div className="p-3 border-2 border-purple-200 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50">
+                {/* Spicy Sauce */}
+                <div className="p-3 border-2 border-red-200 rounded-2xl bg-gradient-to-r from-red-50 to-pink-50">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-purple-600" />
-                      <span className="font-semibold text-gray-800 text-sm">Garlic Sauce</span>
+                      <TrendingUp className="w-4 h-4 text-red-600" />
+                      <span className="font-semibold text-gray-800 text-sm">Spicy Sauce</span>
                     </div>
-                    <Badge variant="secondary" className="text-xs">Lv.{gameState.upgrades.garlicSauce.level}</Badge>
+                    <Badge variant="secondary" className="text-xs">Lv.{gameState.upgrades.spicySauce.level}</Badge>
                   </div>
                   <p className="text-xs text-gray-600 mb-2">+20% multiplier</p>
                   <Button
-                    onClick={() => purchaseUpgrade('garlicSauce')}
-                    disabled={gameState.money < gameState.upgrades.garlicSauce.cost}
-                    className="w-full bg-purple-500 hover:bg-purple-600 text-xs py-2"
+                    onClick={() => purchaseUpgrade('spicySauce')}
+                    disabled={gameState.money < gameState.upgrades.spicySauce.cost}
+                    className="w-full bg-red-500 hover:bg-red-600 text-xs py-2"
                     size="sm"
                   >
-                    ${formatNumber(gameState.upgrades.garlicSauce.cost)}
+                    ${formatNumber(gameState.upgrades.spicySauce.cost)}
                   </Button>
                 </div>
 
@@ -936,7 +915,7 @@ const GameScreen = () => {
         {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-gray-600 font-medium">
-            🥙 Doner Master - The Ultimate Idle Clicker! 🥙
+            🐔 Chicken Master - The Ultimate Clicker! 🐔
           </p>
           <p className="text-gray-500 text-sm mt-1">
             Auto-save enabled • Satisfaction: {gameState.customerSatisfaction}% • {missions.filter(m => m.completed).length}/{missions.length} missions completed
