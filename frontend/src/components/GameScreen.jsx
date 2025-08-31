@@ -31,7 +31,7 @@ const GameScreen = () => {
 
   const [donerRotation, setDonerRotation] = useState(0);
   const [isSlicing, setIsSlicing] = useState(false);
-  const [slicePosition, setSlicePosition] = useState(0); // For realistic cut animation
+  const [knifePosition, setKnifePosition] = useState(-50); // Knife animation position
   const [particles, setParticles] = useState([]);
   const [moneyPopup, setMoneyPopup] = useState([]);
   const [satisfactionPopup, setSatisfactionPopup] = useState([]);
@@ -269,7 +269,7 @@ const GameScreen = () => {
     }, 2000);
   };
 
-  // REALISTIC SLICE ANIMATION with vertical cut line
+  // REALISTIC SLICE ANIMATION with knife falling down
   const sliceDoner = useCallback(() => {
     if (gameState.shopClosed) return;
     
@@ -349,22 +349,37 @@ const GameScreen = () => {
       }
     }
 
-    // REALISTIC CUTTING ANIMATION - Vertical slice line
+    // KNIFE FALLING ANIMATION - Top to bottom
     setIsSlicing(true);
-    setSlicePosition(Math.random() * 60 + 20); // Random cut position
+    setKnifePosition(-50); // Start position (above doner)
     
-    // Create meat particles
-    const newParticles = Array.from({ length: 8 }, (_, i) => ({
+    // Animate knife falling down
+    const animateKnife = () => {
+      let position = -50;
+      const fallInterval = setInterval(() => {
+        position += 8; // Speed of falling
+        setKnifePosition(position);
+        
+        if (position >= 100) { // End position (below doner)
+          clearInterval(fallInterval);
+          setTimeout(() => {
+            setIsSlicing(false);
+            setKnifePosition(-50); // Reset position
+          }, 200);
+        }
+      }, 20);
+    };
+    
+    animateKnife();
+    
+    // Create meat particles at bottom
+    const newParticles = Array.from({ length: 10 }, (_, i) => ({
       id: Date.now() + i,
-      x: 35 + Math.random() * 30,
-      y: 35 + Math.random() * 30,
+      x: 25 + Math.random() * 50, // Spread across bottom
+      y: 75 + Math.random() * 15, // At bottom of doner
       color: ['#fbbf24', '#f59e0b', '#d97706', '#92400e', '#dc2626', '#ef4444'][Math.floor(Math.random() * 6)]
     }));
     setParticles(prev => [...prev, ...newParticles]);
-
-    setTimeout(() => {
-      setIsSlicing(false);
-    }, 600);
     
     setTimeout(() => {
       setParticles(prev => prev.filter(p => !newParticles.includes(p)));
@@ -679,7 +694,7 @@ const GameScreen = () => {
             <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-4 border-orange-300 rounded-3xl">
               <CardContent className="p-8 relative">
                 
-                {/* REALISTIC DONER DESIGN WITH SKEWER INSIDE */}
+                {/* CONE-SHAPED DONER - REALISTIC! */}
                 <div className="relative flex flex-col items-center mb-8">
                   <div 
                     className="relative w-80 h-96 mb-6 cursor-pointer transform transition-all hover:scale-105 active:scale-95"
@@ -689,64 +704,78 @@ const GameScreen = () => {
                       transition: 'transform 0.3s ease-out'
                     }}
                   >
-                    {/* DONER MEAT LAYERS - REALISTIC WITH SKEWER INSIDE */}
-                    {/* Top layer */}
-                    <div className="absolute left-1/2 top-8 w-72 h-20 bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 rounded-full transform -translate-x-1/2 shadow-2xl border-4 border-amber-700 overflow-hidden" 
-                         style={{clipPath: 'ellipse(140px 40px at 50% 50%)'}}>
-                      <div className="absolute inset-2 bg-gradient-to-br from-red-400 via-orange-400 to-amber-500 rounded-full opacity-90"></div>
-                      <div className="absolute inset-4 bg-gradient-to-tl from-yellow-600 via-red-500 to-orange-600 rounded-full opacity-70"></div>
-                      {/* Skewer visible through meat */}
-                      <div className="absolute left-1/2 top-0 w-2 h-full bg-gradient-to-b from-gray-400 to-gray-600 rounded-full transform -translate-x-1/2 opacity-30"></div>
+                    {/* CONE-SHAPED DONER LAYERS - WIDE TOP, NARROW BOTTOM */}
+                    
+                    {/* Top layer - Widest (barely visible) */}
+                    <div className="absolute left-1/2 top-4 w-72 h-16 bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 transform -translate-x-1/2 shadow-2xl border-4 border-amber-700 overflow-hidden opacity-20" 
+                         style={{
+                           clipPath: 'ellipse(140px 32px at 50% 50%)',
+                           borderRadius: '50%'
+                         }}>
+                      <div className="absolute inset-2 bg-gradient-to-br from-red-400 via-orange-400 to-amber-500 opacity-90" style={{borderRadius: '50%'}}></div>
+                      {/* Skewer through center */}
+                      <div className="absolute left-1/2 top-0 w-2 h-full bg-gradient-to-b from-gray-400 to-gray-600 rounded-full transform -translate-x-1/2 opacity-60"></div>
                     </div>
                     
-                    {/* Upper middle layer */}
-                    <div className="absolute left-1/2 top-16 w-68 h-24 bg-gradient-to-r from-red-500 via-orange-600 to-amber-600 rounded-full transform -translate-x-1/2 shadow-xl border-3 border-red-700 overflow-hidden"
-                         style={{clipPath: 'ellipse(135px 48px at 50% 50%)'}}>
-                      <div className="absolute inset-2 bg-gradient-to-br from-amber-500 via-red-400 to-orange-500 rounded-full opacity-85"></div>
-                      <div className="absolute left-1/2 top-0 w-2 h-full bg-gradient-to-b from-gray-400 to-gray-600 rounded-full transform -translate-x-1/2 opacity-40"></div>
+                    {/* Upper layer */}
+                    <div className="absolute left-1/2 top-12 w-68 h-20 bg-gradient-to-r from-red-500 via-orange-600 to-amber-600 transform -translate-x-1/2 shadow-xl border-3 border-red-700 overflow-hidden opacity-40"
+                         style={{
+                           clipPath: 'ellipse(130px 40px at 50% 50%)',
+                           borderRadius: '50%'
+                         }}>
+                      <div className="absolute inset-2 bg-gradient-to-br from-amber-500 via-red-400 to-orange-500 opacity-85" style={{borderRadius: '50%'}}></div>
+                      <div className="absolute left-1/2 top-0 w-2 h-full bg-gradient-to-b from-gray-400 to-gray-600 rounded-full transform -translate-x-1/2 opacity-70"></div>
                     </div>
                     
                     {/* Middle layer */}
-                    <div className="absolute left-1/2 top-24 w-64 h-28 bg-gradient-to-r from-orange-600 via-red-500 to-amber-700 rounded-full transform -translate-x-1/2 shadow-xl border-3 border-orange-800 overflow-hidden"
-                         style={{clipPath: 'ellipse(130px 56px at 50% 50%)'}}>
-                      <div className="absolute inset-2 bg-gradient-to-br from-red-600 via-amber-500 to-orange-600 rounded-full opacity-90"></div>
-                      <div className="absolute left-1/2 top-0 w-2 h-full bg-gradient-to-b from-gray-500 to-gray-700 rounded-full transform -translate-x-1/2 opacity-50"></div>
+                    <div className="absolute left-1/2 top-24 w-60 h-28 bg-gradient-to-r from-orange-600 via-red-500 to-amber-700 transform -translate-x-1/2 shadow-xl border-3 border-orange-800 overflow-hidden opacity-60"
+                         style={{
+                           clipPath: 'ellipse(115px 56px at 50% 50%)',
+                           borderRadius: '50%'
+                         }}>
+                      <div className="absolute inset-2 bg-gradient-to-br from-red-600 via-amber-500 to-orange-600 opacity-90" style={{borderRadius: '50%'}}></div>
+                      <div className="absolute left-1/2 top-0 w-2 h-full bg-gradient-to-b from-gray-500 to-gray-700 rounded-full transform -translate-x-1/2 opacity-80"></div>
                     </div>
                     
                     {/* Lower middle layer */}
-                    <div className="absolute left-1/2 top-32 w-60 h-32 bg-gradient-to-r from-amber-700 via-red-600 to-orange-700 rounded-full transform -translate-x-1/2 shadow-xl border-3 border-amber-800 overflow-hidden"
-                         style={{clipPath: 'ellipse(125px 64px at 50% 50%)'}}>
-                      <div className="absolute inset-2 bg-gradient-to-br from-orange-600 via-red-500 to-amber-600 rounded-full opacity-85"></div>
-                      <div className="absolute left-1/2 top-0 w-2 h-full bg-gradient-to-b from-gray-500 to-gray-700 rounded-full transform -translate-x-1/2 opacity-60"></div>
+                    <div className="absolute left-1/2 top-40 w-48 h-32 bg-gradient-to-r from-amber-700 via-red-600 to-orange-700 transform -translate-x-1/2 shadow-xl border-3 border-amber-800 overflow-hidden opacity-80"
+                         style={{
+                           clipPath: 'ellipse(92px 64px at 50% 50%)',
+                           borderRadius: '50%'
+                         }}>
+                      <div className="absolute inset-2 bg-gradient-to-br from-orange-600 via-red-500 to-amber-600 opacity-85" style={{borderRadius: '50%'}}></div>
+                      <div className="absolute left-1/2 top-0 w-2 h-full bg-gradient-to-b from-gray-500 to-gray-700 rounded-full transform -translate-x-1/2 opacity-90"></div>
                     </div>
                     
-                    {/* Lower layer */}
-                    <div className="absolute left-1/2 top-40 w-56 h-36 bg-gradient-to-r from-red-700 via-amber-600 to-orange-800 rounded-full transform -translate-x-1/2 shadow-xl border-3 border-red-900 overflow-hidden"
-                         style={{clipPath: 'ellipse(120px 72px at 50% 50%)'}}>
-                      <div className="absolute inset-2 bg-gradient-to-br from-amber-700 via-orange-600 to-red-600 rounded-full opacity-90"></div>
-                      <div className="absolute left-1/2 top-0 w-2 h-full bg-gradient-to-b from-gray-600 to-gray-800 rounded-full transform -translate-x-1/2 opacity-70"></div>
+                    {/* Bottom layer - MAIN VISIBLE PART */}
+                    <div className="absolute left-1/2 top-56 w-36 h-36 bg-gradient-to-r from-red-700 via-amber-600 to-orange-800 transform -translate-x-1/2 shadow-2xl border-4 border-red-900 overflow-hidden"
+                         style={{
+                           clipPath: 'ellipse(68px 72px at 50% 50%)',
+                           borderRadius: '50%'
+                         }}>
+                      <div className="absolute inset-2 bg-gradient-to-br from-amber-700 via-orange-600 to-red-600 opacity-90" style={{borderRadius: '50%'}}></div>
+                      {/* Meat texture details */}
+                      <div className="absolute inset-4 bg-gradient-to-tl from-yellow-600 via-red-500 to-orange-600 opacity-70" style={{borderRadius: '50%'}}></div>
+                      <div className="absolute inset-6 bg-gradient-to-br from-red-400 via-orange-400 to-amber-500 opacity-60" style={{borderRadius: '50%'}}></div>
+                      {/* Skewer through center - most visible */}
+                      <div className="absolute left-1/2 top-0 w-3 h-full bg-gradient-to-b from-gray-600 to-gray-800 rounded-full transform -translate-x-1/2 shadow-lg"></div>
                     </div>
                     
-                    {/* Bottom layer */}
-                    <div className="absolute left-1/2 top-48 w-52 h-32 bg-gradient-to-r from-orange-800 via-red-700 to-amber-800 rounded-full transform -translate-x-1/2 shadow-2xl border-4 border-orange-900 overflow-hidden"
-                         style={{clipPath: 'ellipse(115px 64px at 50% 50%)'}}>
-                      <div className="absolute inset-2 bg-gradient-to-br from-red-700 via-amber-600 to-orange-700 rounded-full opacity-85"></div>
-                      <div className="absolute left-1/2 top-0 w-2 h-full bg-gradient-to-b from-gray-600 to-gray-800 rounded-full transform -translate-x-1/2 opacity-80"></div>
-                    </div>
-                    
-                    {/* REALISTIC VERTICAL CUT LINE ANIMATION */}
+                    {/* KNIFE FALLING ANIMATION */}
                     {isSlicing && (
                       <div 
-                        className="absolute top-0 w-1 h-full bg-gradient-to-b from-yellow-400 via-white to-yellow-400 shadow-lg animate-pulse z-40"
+                        className="absolute left-1/2 transform -translate-x-1/2 text-6xl z-50 transition-all duration-300"
                         style={{
-                          left: `${slicePosition}%`,
-                          boxShadow: '0 0 10px rgba(255, 255, 0, 0.8)'
+                          top: `${knifePosition}%`,
+                          filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))'
                         }}
-                      />
+                      >
+                        🔪
+                      </div>
                     )}
                   </div>
                   
-                  {/* Enhanced particles */}
+                  {/* Enhanced particles at bottom */}
                   {particles.map(particle => (
                     <div
                       key={particle.id}
